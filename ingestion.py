@@ -24,7 +24,9 @@ def ingest_csv(file_path):
     
     # Ingest CSV directly into the database
     conn.execute(f"""
-        COPY raw_messages FROM '{file_path}' (DELIMITER ';', HEADER TRUE);
+        INSERT INTO raw_messages
+        SELECT timestamp, uuid::UUID, message FROM read_csv_auto('{file_path}', delim=';', header=True)
+        WHERE uuid::UUID NOT IN (SELECT uuid FROM raw_messages);
     """)
     
     conn.close()
